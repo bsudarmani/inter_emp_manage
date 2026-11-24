@@ -87,7 +87,8 @@ const registerUser = async (req, res) => {
             name:name.trim(),
             email:normalizedEmail,
             contact,
-            password:hashedPassword
+            password:hashedPassword,
+            role:"user"
         });
 
 
@@ -186,7 +187,8 @@ console.log(
             user: {
                 id: user._id,
                 name: user.name,
-                email: user.email
+                email: user.email,
+                role:user.role,
             }
         });
 
@@ -366,28 +368,39 @@ const logout = async (req, res) => {
     }
 };
 
+const getAllUsers = async (req, res) => {
+    try {
+        const users = await User.find({ role: "user" })
+            .select("-password -refreshTokenHash")
+            .sort({ createdAt: -1 });
+
+        return res.status(200).json({ users });
+
+    } catch (error) {
+        return res.status(500).json({
+            message: error.message
+        });
+    }
+};
+
+// GET CURRENT USER PROFILE
 const getProfile = async (req, res) => {
     try {
-        const user = await User.findById(req.userId)
-            .select("-password -refreshTokenHash");
-
-        if (!user) {
-            return res.status(404).json({
-                message: "User not found"
+        if (!req.user) {
+            return res.status(401).json({
+                message: "Unauthorized"
             });
         }
 
         return res.status(200).json({
             message: "Profile fetched successfully",
-            user
+            user: req.user
         });
 
     } catch (error) {
-        console.log("PROFILE ERROR:", error.message);
-
         return res.status(500).json({
             message: "Could not fetch profile"
         });
     }
 };
-module.exports = { registerUser,loginUser,refreshAccessToken,logout,getProfile};
+module.exports = { registerUser,loginUser,refreshAccessToken,logout,getProfile,getAllUsers};

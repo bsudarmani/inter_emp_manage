@@ -1,32 +1,45 @@
-
 import { useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 
 function Login() {
-    const navigate = useNavigate();
     const { login } = useAuth();
+    const navigate = useNavigate();
 
-    const [email, setEmail] = useState("");
-    const [password, setPassword] = useState("");
+    const [form, setForm] = useState({
+        email: "",
+        password: ""
+    });
+
     const [error, setError] = useState("");
     const [loading, setLoading] = useState(false);
+
+    const handleChange = (e) => {
+        setForm({
+            ...form,
+            [e.target.name]: e.target.value
+        });
+    };
 
     const handleSubmit = async (e) => {
         e.preventDefault();
         setError("");
+        setLoading(true);
 
         try {
-            setLoading(true);
+            const data = await login(
+                form.email,
+                form.password
+            );
 
-            await login(email, password);
+            if (data.user.role === "admin") {
+                navigate("/admin");
+            } else {
+                navigate("/user");
+            }
 
-            alert("Login successful!");
-
-            navigate("/dashboard");
-
-        } catch (error) {
-            setError(error.message);
+        } catch (err) {
+            setError(err.message);
         } finally {
             setLoading(false);
         }
@@ -34,60 +47,48 @@ function Login() {
 
     return (
         <div className="container mt-5">
-            <div className="row justify-content-center">
-                <div className="col-md-5">
+            <div className="card shadow mx-auto" style={{ maxWidth: "450px" }}>
+                <div className="card-body p-4">
+                    <h2 className="text-center mb-4">Login</h2>
 
-                    <div className="card shadow">
-                        <div className="card-body p-4">
-
-                            <h2 className="text-center mb-4">
-                                Login
-                            </h2>
-
-                            {error && (
-                                <div className="alert alert-danger">
-                                    {error}
-                                </div>
-                            )}
-
-                            <form onSubmit={handleSubmit}>
-
-                                <input
-                                    type="email"
-                                    className="form-control mb-3"
-                                    placeholder="Enter Email"
-                                    value={email}
-                                    onChange={(e) => setEmail(e.target.value)}
-                                    required
-                                />
-
-                                <input
-                                    type="password"
-                                    className="form-control mb-3"
-                                    placeholder="Enter Password"
-                                    value={password}
-                                    onChange={(e) => setPassword(e.target.value)}
-                                    required
-                                />
-
-                                <button
-                                    type="submit"
-                                    className="btn btn-success w-100"
-                                    disabled={loading}
-                                >
-                                    {loading ? "Logging in..." : "Login"}
-                                </button>
-
-                            </form>
-
-                            <p className="text-center mt-3">
-                                Don't have an account?{" "}
-                                <Link to="/register">Register</Link>
-                            </p>
-
+                    {error && (
+                        <div className="alert alert-danger">
+                            {error}
                         </div>
-                    </div>
+                    )}
 
+                    <form onSubmit={handleSubmit}>
+                        <input
+                            className="form-control mb-3"
+                            type="email"
+                            name="email"
+                            placeholder="Email"
+                            value={form.email}
+                            onChange={handleChange}
+                            required
+                        />
+
+                        <input
+                            className="form-control mb-3"
+                            type="password"
+                            name="password"
+                            placeholder="Password"
+                            value={form.password}
+                            onChange={handleChange}
+                            required
+                        />
+
+                        <button
+                            className="btn btn-success w-100"
+                            disabled={loading}
+                        >
+                            {loading ? "Logging in..." : "Login"}
+                        </button>
+                    </form>
+
+                    <p className="text-center mt-3">
+                        Don't have an account? <Link to="/register">Register</Link>
+                    </p>
                 </div>
             </div>
         </div>

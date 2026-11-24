@@ -1,6 +1,7 @@
 const jwt = require("jsonwebtoken");
+const User = require("../models/User");
 
-const authMiddleware = (req, res, next) => {
+const authMiddleware = async (req, res, next) => {
     try {
         const authHeader = req.headers.authorization;
 
@@ -17,7 +18,17 @@ const authMiddleware = (req, res, next) => {
             process.env.ACCESS_TOKEN_SECRET
         );
 
-        req.userId = decoded.userId;
+        // Fetch current user and role from database
+        const user = await User.findById(decoded.userId)
+            .select("-password -refreshTokenHash");
+
+        if (!user) {
+            return res.status(401).json({
+                message: "User not found"
+            });
+        }
+
+        req.user = user;
 
         next();
 

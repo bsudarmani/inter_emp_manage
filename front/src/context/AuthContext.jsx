@@ -20,58 +20,48 @@ export const AuthProvider = ({ children }) => {
 
     const restoreStarted = useRef(false);
 
-    // 1. Restore session when application starts
-   useEffect(() => {
+    // Restore session on application start
+    useEffect(() => {
+        if (restoreStarted.current) return;
 
-    const restoreSession = async () => {
+        restoreStarted.current = true;
 
-        try {
-            console.log("Session Restore Started");
+        const restoreSession = async () => {
+            try {
+                const data = await refreshAccessToken();
 
-            const data = await refreshAccessToken();
+                setAccessToken(data.accessToken);
 
-            console.log("Refresh Successful");
-
-            setAccessToken(data.accessToken);
-
-            const response = await apiRequest(
-                "/api/users/profile",
-                { method: "GET" },
-                data.accessToken
-            );
-
-            const profileData = await response.json();
-
-            if (!response.ok) {
-                throw new Error(
-                    profileData.message || "Profile fetch failed"
+                const response = await apiRequest(
+                    "/api/users/profile",
+                    { method: "GET" },
+                    data.accessToken
                 );
+
+                const profileData = await response.json();
+
+                if (!response.ok) {
+                    throw new Error(
+                        profileData.message || "Profile failed"
+                    );
+                }
+
+                setUser(profileData.user);
+
+            } catch (error) {
+                console.log("Session restore:", error.message);
+                setAccessToken(null);
+                setUser(null);
+
+            } finally {
+                setLoading(false);
             }
+        };
 
-            setUser(profileData.user);
+        restoreSession();
+    }, []);
 
-            console.log("Profile Loaded Successfully");
-
-        } catch (error) {
-
-            console.log("Session Restore Error:", error.message);
-
-            setAccessToken(null);
-            setUser(null);
-
-        } finally {
-
-            console.log("Session Restore Completed");
-
-            setLoading(false);
-        }
-    };
-
-    restoreSession();
-
-}, []);
-
-    // 2. Login
+    // Login
     const login = async (email, password) => {
         const response = await apiRequest(
             "/api/users/login",
@@ -93,22 +83,20 @@ export const AuthProvider = ({ children }) => {
         return data;
     };
 
-    // 3. Logout
+    // Logout
     const logout = async () => {
         try {
             await apiRequest(
                 "/api/users/logout",
                 { method: "POST" }
             );
-        } catch (error) {
-            console.error("Logout error:", error.message);
         } finally {
             setAccessToken(null);
             setUser(null);
         }
     };
 
-    // 4. Protected API request
+    // Protected API calls
     const request = async (endpoint, options = {}) => {
         let response = await apiRequest(
             endpoint,
@@ -116,14 +104,12 @@ export const AuthProvider = ({ children }) => {
             accessToken
         );
 
-        // Access Token expired
         if (response.status === 401) {
             try {
                 const data = await refreshAccessToken();
 
                 setAccessToken(data.accessToken);
 
-                // Retry the original API only once
                 response = await apiRequest(
                     endpoint,
                     options,
@@ -137,17 +123,11 @@ export const AuthProvider = ({ children }) => {
             }
         }
 
-        if (response.status === 401) {
-            setAccessToken(null);
-            setUser(null);
-            throw new Error("Session expired. Please login again.");
-        }
-
         if (!response.ok) {
-            const errorData = await response.json().catch(() => ({}));
+            const data = await response.json().catch(() => ({}));
 
             throw new Error(
-                errorData.message || "API request failed"
+                data.message || "Request failed"
             );
         }
 

@@ -8,9 +8,12 @@ export const apiRequest = async (
     token = null
 ) => {
     const headers = {
-        "Content-Type": "application/json",
         ...options.headers
     };
+
+    if (!(options.body instanceof FormData) && options.body) {
+        headers["Content-Type"] = "application/json";
+    }
 
     if (token) {
         headers.Authorization = `Bearer ${token}`;
@@ -29,12 +32,12 @@ export const refreshAccessToken = async () => {
             "/api/users/refresh",
             { method: "POST" }
         )
-        .then(async (response) => {
+        .then(async response => {
             const data = await response.json();
 
             if (!response.ok) {
                 throw new Error(
-                    data.message || "Refresh token failed"
+                    data.message || "Session expired"
                 );
             }
 
@@ -47,5 +50,3 @@ export const refreshAccessToken = async () => {
 
     return refreshPromise;
 };
-
-export { API_URL };

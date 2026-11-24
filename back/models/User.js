@@ -27,6 +27,11 @@ const userSchema = new mongoose.Schema({
         type: String,
         required: true
     },
+    role:{
+        type:String,
+        enum:["admin","user"],
+        default:"user"
+    },
     refreshTokenHash:{
         type:String,
         default:null
@@ -35,5 +40,4 @@ const userSchema = new mongoose.Schema({
 }, { timestamps: true });
 
 const User = mongoose.model("User", userSchema);
-
 module.exports = User;
