@@ -6,15 +6,15 @@ const userSchema = new mongoose.Schema({
     name: {
         type: String,
         required: true,
-        trim:true
+        trim: true
     },
 
     email: {
         type: String,
         required: true,
         unique: true,
-        lowercase:true,
-        trim:true
+        lowercase: true,
+        trim: true
     },
 
     contact: {
@@ -27,15 +27,25 @@ const userSchema = new mongoose.Schema({
         type: String,
         required: true
     },
-    role:{
-        type:String,
-        enum:["admin","user"],
-        default:"user"
+    role: {
+        type: String,
+        enum: ["admin", "user"],
+        default: "user"
     },
-    refreshTokenHash:{
-        type:String,
-        default:null
-    }
+    refreshTokenHash: {
+        type: String,
+        default: null
+    },
+    
+    resetPasswordTokenHash: {
+    type: String,
+    default: null
+},
+
+resetPasswordExpires: {
+    type: Date,
+    default: null
+}
 
 }, { timestamps: true });
 

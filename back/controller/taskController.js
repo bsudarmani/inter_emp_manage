@@ -1,6 +1,5 @@
 const Task = require("../models/Task")
 const User = require("../models/User");
-
 // ADMIN: Create and assign task
 const createTask = async (req, res) => {
     try {
@@ -17,7 +16,6 @@ const createTask = async (req, res) => {
                 message: "Title and assigned user are required"
             });
         }
-
         const assignedUser = await User.findOne({
             _id: assignedTo,
             role: "user"
@@ -28,7 +26,6 @@ const createTask = async (req, res) => {
                 message: "Assigned user not found"
             });
         }
-
         const task = await Task.create({
             title,
             description,
@@ -37,19 +34,16 @@ const createTask = async (req, res) => {
             priority: priority || "Medium",
             dueDate: dueDate || null
         });
-
         return res.status(201).json({
             message: "Task assigned successfully",
             task
         });
-
     } catch (error) {
         return res.status(500).json({
             message: error.message
         });
     }
 };
-
 // ADMIN: Get all tasks
 // USER: Get only assigned tasks
 const getTasks = async (req, res) => {
@@ -59,7 +53,6 @@ const getTasks = async (req, res) => {
         if (req.user.role === "user") {
             filter.assignedTo = req.user._id;
         }
-
         const tasks = await Task.find(filter)
             .populate("assignedTo", "name email")
             .populate("assignedBy", "name email")
@@ -75,7 +68,6 @@ const getTasks = async (req, res) => {
         });
     }
 };
-
 // USER: Update status of own task
 // ADMIN: Can update status of any task
 const updateTaskStatus = async (req, res) => {
@@ -87,7 +79,6 @@ const updateTaskStatus = async (req, res) => {
             "In Progress",
             "Completed"
         ];
-
         if (!allowedStatuses.includes(status)) {
             return res.status(400).json({
                 message: "Invalid task status"
@@ -97,17 +88,14 @@ const updateTaskStatus = async (req, res) => {
         const filter = {
             _id: req.params.id
         };
-
         if (req.user.role === "user") {
             filter.assignedTo = req.user._id;
         }
-
         const task = await Task.findOneAndUpdate(
             filter,
             { status },
             { new: true, runValidators: true }
         );
-
         if (!task) {
             return res.status(404).json({
                 message: "Task not found or access denied"
@@ -125,7 +113,6 @@ const updateTaskStatus = async (req, res) => {
         });
     }
 };
-
 // ADMIN: Edit task details and assignment
 const updateTask = async (req, res) => {
     try {
@@ -144,7 +131,6 @@ const updateTask = async (req, res) => {
                 updates[field] = req.body[field];
             }
         }
-
         if (updates.assignedTo) {
             const assignedUser = await User.findOne({
                 _id: updates.assignedTo,
@@ -157,42 +143,35 @@ const updateTask = async (req, res) => {
                 });
             }
         }
-
         const task = await Task.findByIdAndUpdate(
             req.params.id,
             updates,
             { new: true, runValidators: true }
         );
-
         if (!task) {
             return res.status(404).json({
                 message: "Task not found"
             });
         }
-
         return res.status(200).json({
             message: "Task updated successfully",
             task
         });
-
     } catch (error) {
         return res.status(500).json({
             message: error.message
         });
     }
 };
-
 // ADMIN: Delete task
 const deleteTask = async (req, res) => {
     try {
         const task = await Task.findByIdAndDelete(req.params.id);
-
         if (!task) {
             return res.status(404).json({
                 message: "Task not found"
             });
         }
-
         return res.status(200).json({
             message: "Task deleted successfully"
         });
@@ -203,7 +182,6 @@ const deleteTask = async (req, res) => {
         });
     }
 };
-
 module.exports = {
     createTask,
     getTasks,

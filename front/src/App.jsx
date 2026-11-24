@@ -11,6 +11,8 @@ import Register from "./pages/Register";
 import Login from "./pages/Login";
 import AdminDashboard from "./pages/AdminDashboard";
 import UserDashboard from "./pages/UserDashboard";
+import ForgotPassword from "./pages/ForgotPassword";
+import ResetPassword from "./pages/ResetPassword";
 
 import ProtectedRoute from "./components/protectedRoute";
 
@@ -74,6 +76,15 @@ function App() {
                     <Route
                         path="/unauthorized"
                         element={<Unauthorized />}
+                    />
+                    <Route
+                        path="/forgot-password"
+                        element={<ForgotPassword />}
+                    />
+
+                    <Route
+                        path="/reset-password"
+                        element={<ResetPassword />}
                     />
 
                     <Route path="*" element={<Navigate to="/" replace />} />

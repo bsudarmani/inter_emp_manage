@@ -67,9 +67,9 @@ function UserDashboard() {
                     <div className="col-md-6 mb-3" key={task._id}>
                         <div className="card shadow-sm">
                             <div className="card-body">
-                                <h5>{task.title}</h5>
+                                <h5>Main Task: {task.title}</h5>
 
-                                <p>{task.description}</p>
+                                <p>Next Task: {task.description}</p>
 
                                 <p>
                                     Priority: {task.priority}
@@ -78,7 +78,7 @@ function UserDashboard() {
                                 <p>
                                     Status: <strong>{task.status}</strong>
                                 </p>
-
+                                <label>Choose the Status:</label>
                                 <select
                                     className="form-select"
                                     value={task.status}

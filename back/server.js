@@ -6,9 +6,7 @@ const cookieParser = require("cookie-parser");
 
 const connectDB = require("./config/db");
 
-const {
-    generalLimiter
-} = require("./middleware/rateLimiters");
+const { generalLimiter } = require("./middleware/rateLimiters");
 
 const app = express();
 
