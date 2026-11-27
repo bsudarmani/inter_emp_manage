@@ -4,6 +4,7 @@ const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken")
 const crypto = require("crypto")
 const sendEmail = require("../utils/sendEmail");
+const logger=require("../config/logger");
 const generateAccessToken = (userId) => {
     return jwt.sign(
         { userId },
@@ -85,6 +86,7 @@ const registerUser = async (req, res) => {
             password: hashedPassword,
             role: "user"
         });
+        logger.info(`user registered successfully:${user._id}`);
         // await newUser.save();
 
         //     return res.status(201).json(
@@ -102,7 +104,10 @@ const registerUser = async (req, res) => {
         });
     } catch (error) {
         console.error("REGISTER ERROR:", error);
-
+        logger.error("Registration failed",{
+            error:error.message,
+            stack:error.stack
+        });
         if (error.code === 11000) {
             return res.status(409).json({
                 message: "Email or Contact already exists"
@@ -164,6 +169,7 @@ const loginUser = async (req, res) => {
             ...cookieOptions,
             maxAge: 7 * 24 * 60 * 60 * 1000
         });
+        logger.info(`User login successful: ${user._id}`);
         return res.status(200).json({
             message: "Login successful",
             accessToken,
@@ -176,6 +182,7 @@ const loginUser = async (req, res) => {
         });
 
     } catch (error) {
+        logger.warn("Login failed: Invalid credentials");
         console.log("LOGIN ERROR:", error.message);
 
         return res.status(500).json({
@@ -303,39 +310,54 @@ const refreshAccessToken = async (req, res) => {
 };
 
 //logout
+
 const logout = async (req, res) => {
     try {
         const refreshToken = req.cookies?.refreshToken;
 
         if (refreshToken) {
             try {
+                // Verify refresh token
                 const decoded = jwt.verify(
                     refreshToken,
                     process.env.REFRESH_TOKEN_SECRET
                 );
-                const user = await User.findById(rIdecoded.used);
+
+                // Find user using JWT payload
+                const user = await User.findById(decoded.id);
+
+                // Compare stored refresh token hash
                 if (
                     user &&
                     user.refreshTokenHash === hashToken(refreshToken)
                 ) {
                     user.refreshTokenHash = null;
                     await user.save();
+
+                    logger.info(`User logout successful: ${user._id}`);
                 }
 
             } catch (error) {
-                console.log("Invalid refresh token during logout");
+                logger.warn("Invalid refresh token during logout");
             }
         }
+
+        // Clear refresh token cookie
         res.clearCookie("refreshToken", cookieOptions);
+
         return res.status(200).json({
             message: "Logout successful"
         });
+
     } catch (error) {
+        logger.error(`Logout error: ${error.message}`);
+
         return res.status(500).json({
-            message: error.message
+            message: "Internal server error"
         });
     }
 };
+
 
 const getAllUsers = async (req, res) => {
     try {

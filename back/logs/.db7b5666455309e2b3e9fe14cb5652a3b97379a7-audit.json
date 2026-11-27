@@ -1,0 +1,15 @@
+{
+    "keep": {
+        "days": true,
+        "amount": 14
+    },
+    "auditLog": "C:\\Users\\AIIMTECH\\Downloads\\TodoListApplication\\back\\logs\\.db7b5666455309e2b3e9fe14cb5652a3b97379a7-audit.json",
+    "files": [
+        {
+            "date": 1795759951233,
+            "name": "C:\\Users\\AIIMTECH\\Downloads\\TodoListApplication\\back\\logs\\combined-2026-11-27.log",
+            "hash": "3a07949bbde643e2fb5a613ad46f188a8309a437f453dcb8df27b045e5047139"
+        }
+    ],
+    "hashType": "sha256"
+}
